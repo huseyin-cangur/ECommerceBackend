@@ -8,7 +8,7 @@ namespace WebAPI.Data
 
         public ECommerceContext(DbContextOptions<ECommerceContext> options) : base(options)
         {
-            
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -68,12 +68,14 @@ namespace WebAPI.Data
                         ImageUrl = "https://example.com/sample-product-5.jpg",
                         IsActive = false
                     }
-                   
+
                 }
             );
         }
-        
+
 
         public DbSet<Product> Products => Set<Product>();
+        public DbSet<Cart> Carts => Set<Cart>();
+
     }
 }
