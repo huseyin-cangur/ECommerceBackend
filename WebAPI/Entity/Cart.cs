@@ -13,7 +13,7 @@ namespace WebAPI.Entity
             var existingItem = CartItems.FirstOrDefault(item => item.ProductId == product.Id);
             if (existingItem != null)
             {
-                existingItem.Quantity += quantity;
+                existingItem.Quantity   += quantity;
             }
             else
             {

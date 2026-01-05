@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Data;
+using WebAPI.DTO;
 using WebAPI.Entity;
 
 namespace WebAPI.Controllers
@@ -19,10 +20,9 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCart()
+        public async Task<ActionResult<CartDTO>> GetCart()
         {
-            var cart = await GetOrCreateCartAsync();
-            return Ok(cart);
+            return CartToDTO(await GetOrCreateCartAsync());
         }
 
         [HttpPost]
@@ -39,21 +39,21 @@ namespace WebAPI.Controllers
             var result = await _context.SaveChangesAsync() > 0;
 
             if (result)
-                return CreatedAtAction(nameof(GetCart), cart);
+                return CreatedAtAction(nameof(GetCart), CartToDTO(cart));
 
 
-            return BadRequest(new ProblemDetails{ Title = "Ürün sepete eklenemedi." });
+            return BadRequest(new ProblemDetails { Title = "Ürün sepete eklenemedi." });
         }
 
         [HttpDelete]
-        public async Task<IActionResult> RemoveItemFromCart(int productId,int quantity)
+        public async Task<IActionResult> RemoveItemFromCart(int productId, int quantity)
         {
             var cart = await GetOrCreateCartAsync();
             cart.RemoveItem(productId, quantity);
             var result = await _context.SaveChangesAsync() > 0;
 
             if (result)
-                return Ok(cart);
+                return Ok(CartToDTO(cart));
 
             return BadRequest(new ProblemDetails { Title = "Silme işlemi başarısız." });
         }
@@ -61,6 +61,9 @@ namespace WebAPI.Controllers
 
         private async Task<Cart> GetOrCreateCartAsync()
         {
+
+
+
             var cart = await _context.Carts
               .Include(c => c.CartItems)
               .ThenInclude(ci => ci.Product)
@@ -90,6 +93,23 @@ namespace WebAPI.Controllers
             }
 
             return cart;
+        }
+
+        private CartDTO CartToDTO(Cart cart)
+        {
+            return new CartDTO
+            {
+                Id = cart.Id,
+                CustomerId = cart.CustomerId,
+                CartItems = cart.CartItems.Select(ci => new CartItemDTO
+                {
+                    ProductId = ci.Product.Id,
+                    ProductName = ci.Product.Name,
+                    ProductPrice = ci.Product.Price,
+                    ProductImageUrl = ci.Product.ImageUrl,
+                    Quantity = ci.Quantity
+                }).ToList()
+            };
         }
     }
 }
